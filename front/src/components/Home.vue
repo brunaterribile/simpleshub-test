@@ -19,7 +19,8 @@
             </button>
         </div>
         
-        <component :is="currentView"></component>
+        <SendPDF v-if="currentView === 'send-pdf'" />
+        <HistoryView v-if="currentView === 'history'" />
     </div>
 </template>
 
@@ -59,19 +60,20 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 200px;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    width: 300px;
     border: none;
     border-radius: 0.375rem;
     background-color: #fff;
     color: #64748b;
     font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.25rem;
+    font-family: 'Poppins', sans-serif;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    font-size: 1rem;
-    line-height: 1.25rem;
 
     .button-icon {
         width: 20px;
@@ -86,7 +88,7 @@ export default {
     &.active {
         background-color: #41cca3;
         color: white;
-        
+
         .button-icon {
             filter: brightness(0) invert(1);
         }
