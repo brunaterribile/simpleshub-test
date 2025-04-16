@@ -51,7 +51,6 @@ export default {
                     throw new Error('Erro ao buscar CPFs');
                 }
                 const data = await response.json();
-                console.log(data);
                 this.cpfs = data.cpfs || [];
             } catch (error) {
                 console.error('Erro ao buscar CPFs:', error);
@@ -80,7 +79,8 @@ export default {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: calc(100vh - 200px);
+    height: 100%;
+    overflow: hidden;
 }
 
 .history-container {
@@ -91,6 +91,10 @@ export default {
     border: 1px solid #e2e8f0;
     width: 100%;
     max-width: 800px;
+    height: calc(100% - 2rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     h2 {
         margin-bottom: 2rem;
@@ -99,7 +103,11 @@ export default {
 }
 
 .content {
-    min-height: 200px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .empty-state, .loading {
@@ -110,17 +118,19 @@ export default {
 }
 
 .table-container {
-    overflow-x: auto;
+    flex: 1;
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
 }
 
 .cpf-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    margin-top: 1rem;
+    margin-top: 0;
     border-radius: 0.5rem;
-    overflow: hidden;
-
+    
     th, td {
         padding: 0.75rem 1rem;
         text-align: left;
@@ -131,6 +141,9 @@ export default {
         background-color: #41cca3;
         font-weight: 600;
         color: white;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
     
     tr:hover {

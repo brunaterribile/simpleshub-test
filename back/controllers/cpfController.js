@@ -57,7 +57,7 @@ exports.uploadPdf = async (req, res) => {
     return res.status(200).json({ 
       success: true,
       cpfs: cpfs,
-      message: 'PDF processado com sucesso'
+      message: 'PDF processado com sucesso!'
     });
   } catch (error) {
     console.error('Erro ao processar PDF:', error);

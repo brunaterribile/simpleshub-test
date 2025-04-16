@@ -1,6 +1,6 @@
 <template>
     <div class="send-pdf">
-        <div class="upload-container">
+        <div class="upload-container" :class="{ 'expanded': foundCpfs.length > 0 }">
             <h2>Enviar PDF</h2>
             
             <div class="file-input-container">
@@ -24,24 +24,45 @@
                 </div>
             </div>
 
-            <button 
-                @click="submitPdf" 
-                :disabled="!selectedFile"
-                class="submit-button"
-                :class="{ 'disabled': !selectedFile }"
-            >
-                Enviar
-            </button>
+            <div class="action-container">
+                <button 
+                    @click="submitPdf" 
+                    :disabled="!selectedFile"
+                    class="submit-button"
+                    :class="{ 'disabled': !selectedFile }"
+                >
+                    Enviar
+                </button>
 
-            <p v-if="uploadStatus" class="status" :class="{ 'error': uploadStatus.includes('erro') }">
-                {{ uploadStatus }}
-            </p>
+                <p v-if="uploadStatus" 
+                   class="status" 
+                   :class="{
+                       'error': uploadStatus.includes('corrompido') || 
+                               uploadStatus.includes('erro') || 
+                               uploadStatus.includes('Erro de conexão'),
+                       'warning': uploadStatus.includes('Nenhum CPF'),
+                       'success': uploadStatus.includes('sucesso')
+                   }"
+                >
+                    {{ uploadStatus }}
+                </p>
+            </div>
             
             <div v-if="foundCpfs.length > 0" class="cpfs-found">
-                <h3>CPFs encontrados:</h3>
-                <ul>
-                    <li v-for="(cpf, index) in foundCpfs" :key="index">{{ cpf }}</li>
-                </ul>
+                <div class="cpfs-table-container">
+                    <table class="cpfs-table">
+                        <thead>
+                            <tr>
+                                <th>CPFs encontrados:</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(cpf, index) in foundCpfs" :key="index">
+                                <td>{{ cpf }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -88,7 +109,7 @@ export default {
 
             try {
                 this.uploadStatus = 'Enviando...';
-                this.foundCpfs = []; // Limpar CPFs anteriores
+                this.foundCpfs = [];
 
                 const response = await fetch('http://localhost:3000/api/upload', {
                     method: 'POST',
@@ -101,13 +122,13 @@ export default {
                 if (response.ok && data.success) {
                     this.uploadStatus = data.message || 'PDF enviado com sucesso!';
                     this.foundCpfs = data.cpfs || [];
-                    console.log('CPFs extraídos:', this.foundCpfs);
+                    console.log('CPFs coletados:', this.foundCpfs);
                 } else {
                     this.uploadStatus = data.error || 'Erro ao enviar o PDF, tente novamente';
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                this.uploadStatus = 'Erro de conexão com o servidor, verifique se o backend está rodando';
+                this.uploadStatus = 'Erro de conexão com o servidor';
             }
         }
     }
@@ -120,17 +141,28 @@ export default {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    min-height: calc(100vh - 200px);
+    height: 100%;
+    overflow: hidden;
 }
 
 .upload-container {
     background-color: #f8fafc;
     padding: 1rem 2rem;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
     width: 100%;
     max-width: 800px;
+    height: auto;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    overflow: visible;
+
+    &.expanded {
+        max-height: 100%;
+    }
 
     h2 {
         margin-bottom: 2rem;
@@ -246,46 +278,93 @@ export default {
     }
 }
 
+.action-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .status {
-    margin-top: 1rem;
-    padding: 0.75rem;
+    margin: 0;
+    padding: 0.75rem 1rem;
     border-radius: 0.375rem;
-    background-color: #f0fdf4;
-    color: #166534;
+    flex: 1;
+
+    &.success {
+        background-color: #f0fdf4;
+        color: #166534;
+        border: 1px solid #dcfce7;
+    }
 
     &.error {
         background-color: #fef2f2;
         color: #991b1b;
+        border: 1px solid #fee2e2;
+    }
+
+    &.warning {
+        background-color: #fefce8;
+        color: #854d0e;
+        border: 1px solid #fef9c3;
     }
 }
 
 .cpfs-found {
     margin-top: 1.5rem;
-    padding: 1rem;
+    margin-bottom: 1rem;
+    padding: 0;
     background-color: #f8fafc;
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
 
-    h3 {
-        margin-bottom: 0.75rem;
-        color: #1e293b;
-        font-size: 1rem;
-    }
+}
 
-    ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
+.cpfs-header {
+    padding: 1rem;
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
 
-    li {
-        padding: 0.5rem 0;
+.cpfs-table-container {
+    flex: 1;
+    overflow: auto;
+    max-height: 200px;
+    margin-top: 0;
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.cpfs-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    
+    th, td {
+        padding: 0.75rem 1rem;
+        text-align: left;
         border-bottom: 1px solid #e2e8f0;
-        color: #64748b;
-        
-        &:last-child {
-            border-bottom: none;
-        }
+    }
+    
+    th {
+        background-color: #41cca3;
+        font-weight: 600;
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+    
+    td {
+        color: #475569;
+        background-color: #f8fafc;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
     }
 }
 </style>

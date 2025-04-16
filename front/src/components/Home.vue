@@ -19,8 +19,10 @@
             </button>
         </div>
         
-        <SendPDF v-if="currentView === 'send-pdf'" />
-        <HistoryView v-if="currentView === 'history'" />
+        <div class="content-container">
+            <SendPDF v-if="currentView === 'send-pdf'" />
+            <HistoryView v-if="currentView === 'history'" />
+        </div>
     </div>
 </template>
 
@@ -45,6 +47,10 @@ export default {
 <style lang="scss">
 .home {
     margin-top: 70px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 70px);
+    overflow: hidden;
 }
 
 .button-container {
@@ -54,6 +60,19 @@ export default {
     padding: 2rem;
     background-color: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
+    position: fixed;
+    width: 100%;
+    top: 70px;
+    z-index: 10;
+}
+
+.content-container {
+    margin-top: 120px;
+    flex: 1;
+    width: 100%;
+    height: calc(100vh - 270px);
+    position: fixed;
+    padding-bottom: 2rem;
 }
 
 .nav-button {

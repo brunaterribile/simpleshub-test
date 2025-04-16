@@ -23,6 +23,7 @@ export default {
         height: 50px;
         padding: 0.7rem 2rem;
         border-bottom: 2px solid #41cca3;
+        z-index: 20;
     }
 </style>
 
