@@ -46,21 +46,17 @@ export default {
         async fetchCpfs() {
             try {
                 this.loading = true;
-                // const response = await fetch('http://localhost:3000/history');
-                // const data = await response.json();
-                // this.cpfs = data.cpfs;
-                
-                setTimeout(() => {
-                    this.cpfs = [
-                        { number: '123.456.789-00', createdAt: '2023-04-15T10:30:00Z' },
-                        { number: '987.654.321-00', createdAt: '2023-04-14T15:45:00Z' },
-                        { number: '111.222.333-44', createdAt: '2023-04-13T09:15:00Z' }
-                    ];
-                    this.loading = false;
-                }, 1000);
-                
+                const response = await fetch('http://localhost:3000/api/history');
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar CPFs');
+                }
+                const data = await response.json();
+                console.log(data);
+                this.cpfs = data.cpfs || [];
             } catch (error) {
                 console.error('Erro ao buscar CPFs:', error);
+                this.cpfs = [];
+            } finally {
                 this.loading = false;
             }
         },
@@ -124,7 +120,7 @@ export default {
     margin-top: 1rem;
     border-radius: 0.5rem;
     overflow: hidden;
-    
+
     th, td {
         padding: 0.75rem 1rem;
         text-align: left;

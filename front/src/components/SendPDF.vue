@@ -36,6 +36,13 @@
             <p v-if="uploadStatus" class="status" :class="{ 'error': uploadStatus.includes('erro') }">
                 {{ uploadStatus }}
             </p>
+            
+            <div v-if="foundCpfs.length > 0" class="cpfs-found">
+                <h3>CPFs encontrados:</h3>
+                <ul>
+                    <li v-for="(cpf, index) in foundCpfs" :key="index">{{ cpf }}</li>
+                </ul>
+            </div>
         </div>
     </div>
 </template>
@@ -46,7 +53,8 @@ export default {
     data() {
         return {
             selectedFile: null,
-            uploadStatus: ''
+            uploadStatus: '',
+            foundCpfs: []
         };
     },
     methods: {
@@ -55,14 +63,17 @@ export default {
             if (file && file.type === "application/pdf") {
                 this.selectedFile = file;
                 this.uploadStatus = '';
+                this.foundCpfs = []; 
             } else {
                 this.uploadStatus = 'Por favor, selecione um arquivo PDF válido.';
                 this.selectedFile = null;
+                this.foundCpfs = [];
             }
         },
         removeFile() {
             this.selectedFile = null;
             this.uploadStatus = '';
+            this.foundCpfs = [];
             
             const fileInput = document.getElementById('pdf-upload');
             if (fileInput) {
@@ -77,23 +88,26 @@ export default {
 
             try {
                 this.uploadStatus = 'Enviando...';
+                this.foundCpfs = []; // Limpar CPFs anteriores
 
-                const response = await fetch('http://localhost:3000/upload', {
+                const response = await fetch('http://localhost:3000/api/upload', {
                     method: 'POST',
                     body: formData
                 });
 
                 const data = await response.json();
+                console.log('Resposta do servidor:', data);
 
-                if (response.ok) {
-                    this.uploadStatus = 'PDF enviado com sucesso!';
-                    console.log('CPFs extraídos:', data.cpfs);
+                if (response.ok && data.success) {
+                    this.uploadStatus = data.message || 'PDF enviado com sucesso!';
+                    this.foundCpfs = data.cpfs || [];
+                    console.log('CPFs extraídos:', this.foundCpfs);
                 } else {
-                    this.uploadStatus = 'Erro ao enviar o PDF, tente novamente';
+                    this.uploadStatus = data.error || 'Erro ao enviar o PDF, tente novamente';
                 }
             } catch (error) {
-                this.uploadStatus = 'Erro ao enviar o PDF, tente novamente';
                 console.error('Erro:', error);
+                this.uploadStatus = 'Erro de conexão com o servidor, verifique se o backend está rodando';
             }
         }
     }
@@ -242,6 +256,36 @@ export default {
     &.error {
         background-color: #fef2f2;
         color: #991b1b;
+    }
+}
+
+.cpfs-found {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #f8fafc;
+    border-radius: 0.375rem;
+    border: 1px solid #e2e8f0;
+
+    h3 {
+        margin-bottom: 0.75rem;
+        color: #1e293b;
+        font-size: 1rem;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #64748b;
+        
+        &:last-child {
+            border-bottom: none;
+        }
     }
 }
 </style>
