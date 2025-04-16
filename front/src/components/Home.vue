@@ -6,7 +6,7 @@
                 :class="{ active: currentView === 'send-pdf' }"
                 @click="currentView = 'send-pdf'"
             >
-                <img src="/upload.png" alt="Upload" class="button-icon">
+                <img src="../assets/upload.png" alt="Upload" class="button-icon">
                 Enviar PDF
             </button>
             <button 
@@ -14,7 +14,7 @@
                 :class="{ active: currentView === 'history' }"
                 @click="currentView = 'history'"
             >
-                <img src="/history.png" alt="History" class="button-icon">
+                <img src="../assets/history.png" alt="History" class="button-icon">
                 Histórico
             </button>
         </div>

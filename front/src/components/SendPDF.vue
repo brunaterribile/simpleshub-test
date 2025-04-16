@@ -12,11 +12,11 @@
                     id="pdf-upload"
                 />
                 <label for="pdf-upload" class="file-label" v-if="!selectedFile">
-                    <img src="/upload.png" alt="Upload" class="upload-icon">
+                    <img src="../assets/upload.png" alt="Upload" class="upload-icon">
                     <span>Selecione um arquivo</span>
                 </label>
                 <div class="selected-file" v-else>
-                    <img src="/upload.png" alt="Upload" class="upload-icon">
+                    <img src="../assets/upload.png" alt="Upload" class="upload-icon">
                     <span class="file-name">{{ selectedFile.name }}</span>
                     <button class="remove-button" @click="removeFile">
                         <span class="x-icon">×</span>
