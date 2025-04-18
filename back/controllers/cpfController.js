@@ -1,52 +1,18 @@
 const fs = require('fs');
-const path = require('path');
 const pdfParse = require('pdf-parse');
 const { db } = require('../firebaseConfig');
 
-// Função para limpar e normalizar o texto do PDF
-function cleanPdfText(text) {
-  return text
-    .replace(/[^\x00-\x7F]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 exports.uploadPdf = async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nenhum arquivo foi enviado' });
+  const dataBuffer = req.body;
+
+  if (!dataBuffer || !Buffer.isBuffer(dataBuffer)) {
+    return res.status(400).json({ error: 'Nenhum arquivo foi enviado ou formato inválido' });
   }
 
-  const filePath = path.resolve(req.file.path);
-  console.log('filePath', filePath);
-
+  console.log("passei por aqui", dataBuffer)
   try {
-    if (!fs.existsSync(filePath)) {
-      return res.status(400).json({ error: 'Arquivo não encontrado' });
-    }
-
-    const stats = fs.statSync(filePath);
-    if (stats.size === 0) {
-      fs.unlinkSync(filePath);
-      return res.status(400).json({ error: 'O arquivo está vazio' });
-    }
-
-    const dataBuffer = fs.readFileSync(filePath);
-    
-    // Verificação do cabeçalho do PDF
-    const header = dataBuffer.toString('ascii', 0, 5);
-    if (header !== '%PDF-') {
-      fs.unlinkSync(filePath);
-      return res.status(400).json({ error: 'O arquivo não é um PDF válido' });
-    }
-
-    // Configurações para o pdf-parse
-    const options = {
-      max: 0, // Processa todas as páginas
-      pagerender: null, // Usa o renderizador padrão
-    };
-
-    const pdfData = await pdfParse(dataBuffer, options);
-    const text = cleanPdfText(pdfData.text);
+    const pdfData = await pdfParse(dataBuffer);
+    const text = pdfData.text;
 
     const cpfRegex = /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g;
     const cpfs = [...new Set(text.match(cpfRegex) || [])];
@@ -78,27 +44,19 @@ exports.uploadPdf = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro ao processar PDF:', error);
+    console.error('O erro foi =>', error.message, error.details);
     
     let errorMessage = 'Erro ao processar PDF';
-    if (error.message.includes('Invalid number: +')) {
-      errorMessage = 'O PDF contém caracteres inválidos. Por favor, tente converter o PDF para um formato mais simples.';
-    } else if (error.message.includes('bad XRef entry')) {
-      errorMessage = 'O PDF está corrompido ou em um formato não suportado. Por favor, tente converter o PDF para um formato mais simples.';
+    if (error.message.includes('bad XRef entry')) {
+      errorMessage = 'O PDF está corrompido ou em um formato não suportado';
+    } else if (error.message.includes('Invalid PDF structure')) {
+      errorMessage = 'Estrutura do PDF inválida';
     }
 
     return res.status(500).json({
       success: false,
       error: errorMessage,
     });
-  } finally {
-    try {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    } catch (cleanupError) {
-      console.error('Erro ao limpar arquivo temporário:', cleanupError);
-    }
   }
 };
 
