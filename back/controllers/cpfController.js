@@ -9,14 +9,12 @@ exports.uploadPdf = async (req, res) => {
     return res.status(400).json({ error: 'Nenhum arquivo foi enviado ou formato inválido' });
   }
 
-  console.log("passei por aqui", dataBuffer)
   try {
     const pdfData = await pdfParse(dataBuffer);
     const text = pdfData.text;
 
     const cpfRegex = /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g;
     const cpfs = [...new Set(text.match(cpfRegex) || [])];
-    console.log('cpfs', cpfs);
 
     if (cpfs.length === 0) {
       fs.unlinkSync(filePath);
@@ -44,8 +42,6 @@ exports.uploadPdf = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('O erro foi =>', error.message, error.details);
-    
     let errorMessage = 'Erro ao processar PDF';
     if (error.message.includes('bad XRef entry')) {
       errorMessage = 'O PDF está corrompido ou em um formato não suportado';
