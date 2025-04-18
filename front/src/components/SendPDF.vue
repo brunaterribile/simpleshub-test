@@ -6,7 +6,7 @@
             <div class="file-input-container">
                 <input 
                     type="file" 
-                    accept="application/pdf" 
+                    accept="application/pdf"
                     @change="onFileChange" 
                     class="file-input"
                     id="pdf-upload"
@@ -104,8 +104,10 @@ export default {
         async submitPdf() {
             if (!this.selectedFile) return;
 
-            const formData = new FormData();
-            formData.append('pdf', this.selectedFile);
+            const reader = new FileReader();
+
+            reader.onload = async () => {
+                const arrayBuffer = reader.result;
 
             try {
                 this.uploadStatus = 'Enviando...';
@@ -113,7 +115,10 @@ export default {
 
                 const response = await fetch('http://localhost:3000/api/upload', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                            'Content-Type': 'application/pdf'
+                        },
+                    body: arrayBuffer
                 });
 
                 const data = await response.json();
@@ -130,6 +135,10 @@ export default {
                 console.error('Erro:', error);
                 this.uploadStatus = 'Erro de conexão com o servidor';
             }
+
+            };
+
+            reader.readAsArrayBuffer(this.selectedFile);
         }
     }
 }
