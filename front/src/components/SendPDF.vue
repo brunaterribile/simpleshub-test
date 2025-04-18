@@ -4,14 +4,13 @@
             <h2>Enviar PDF</h2>
             
             <div class="file-input-container">
-                <input 
-                    type="file" 
-                    accept="application/pdf" 
-                    @change="onFileChange" 
-                    class="file-input"
-                    id="pdf-upload"
-                />
-                <label for="pdf-upload" class="file-label" v-if="!selectedFile">
+                <label class="file-label" v-if="!selectedFile">
+                    <input 
+                        type="file" 
+                        accept="application/pdf"
+                        @change="onFileChange" 
+                        class="file-input"
+                    />
                     <img src="../assets/upload.png" alt="Upload" class="upload-icon">
                     <span>Selecione um arquivo</span>
                 </label>
@@ -96,7 +95,7 @@ export default {
             this.uploadStatus = '';
             this.foundCpfs = [];
             
-            const fileInput = document.getElementById('pdf-upload');
+            const fileInput = document.querySelector('.file-input');
             if (fileInput) {
                 fileInput.value = '';
             }
@@ -104,8 +103,10 @@ export default {
         async submitPdf() {
             if (!this.selectedFile) return;
 
-            const formData = new FormData();
-            formData.append('pdf', this.selectedFile);
+            const reader = new FileReader();
+
+            reader.onload = async () => {
+                const arrayBuffer = reader.result;
 
             try {
                 this.uploadStatus = 'Enviando...';
@@ -113,7 +114,10 @@ export default {
 
                 const response = await fetch('http://localhost:3000/api/upload', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                            'Content-Type': 'application/pdf'
+                        },
+                    body: arrayBuffer
                 });
 
                 const data = await response.json();
@@ -130,6 +134,10 @@ export default {
                 console.error('Erro:', error);
                 this.uploadStatus = 'Erro de conexão com o servidor';
             }
+
+            };
+
+            reader.readAsArrayBuffer(this.selectedFile);
         }
     }
 }
@@ -175,7 +183,12 @@ export default {
 }
 
 .file-input {
-    display: none;
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
 }
 
 .file-label {
@@ -189,6 +202,7 @@ export default {
     cursor: pointer;
     transition: all 0.2s;
     color: #64748b;
+    position: relative;
 
     &:hover {
         border-color: #41cca3;
